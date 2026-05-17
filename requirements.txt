@@ -1,0 +1,205 @@
+# ============================================================
+# LLM Evaluation with DeepEval — Requirements File
+# ============================================================
+# Install all dependencies with:
+#   pip install -r requirements.txt
+#
+# For Google Colab, run in a notebook cell:
+#   !pip install deepeval
+#
+# Python version required: >= 3.10
+# Verify with: python --version
+#
+# IMPORTANT: One API key required:
+#   OPENAI_API_KEY → https://platform.openai.com/api-keys
+#   (Used as the judge LLM for GEval and FaithfulnessMetric)
+# ============================================================
+
+# --------------------------
+# Core: DeepEval Framework
+# --------------------------
+deepeval>=1.0.0              # Complete LLM evaluation framework
+                             # Includes ALL of the following in one package:
+                             #
+                             # Test Case:
+                             #   LLMTestCase          — evaluation unit (input, output, context)
+                             #   LLMTestCaseParams    — enum (INPUT, ACTUAL_OUTPUT, EXPECTED_OUTPUT,
+                             #                          RETRIEVAL_CONTEXT)
+                             #
+                             # Metrics (14+ built-in):
+                             #   GEval                — custom LLM-as-judge for any criteria
+                             #   FaithfulnessMetric   — RAG claim verification vs context
+                             #   AnswerRelevancyMetric — does output answer the question?
+                             #   HallucinationMetric  — claims contradicted by ground truth
+                             #   ContextualPrecisionMetric — retrieved chunks relevance
+                             #   ContextualRecallMetric   — all relevant info retrieved?
+                             #   ContextualRelevancyMetric — overall context quality
+                             #   ToxicityMetric       — built-in toxicity detection
+                             #   BiasMetric           — gender, racial, political bias
+                             #   ToolCorrectnessMetric — agent tool selection evaluation
+                             #   TaskCompletionMetric — agent task completion evaluation
+                             #
+                             # Testing:
+                             #   assert_test()        — pytest assertion for metrics
+                             #   evaluate()           — batch evaluation across many test cases
+                             #   deepeval test run    — CLI for running pytest-based evals
+                             #
+                             # Confident AI integration:
+                             #   login_with_confident_api_key() — connect to dashboard
+
+# --------------------------
+# Local Environment Support
+# --------------------------
+python-dotenv>=1.0.0         # Load OPENAI_API_KEY from .env file
+                             # Not needed in Google Colab — use Secrets panel
+
+# ============================================================
+# Optional: Alternative Judge LLMs
+# ============================================================
+# By default, DeepEval uses OpenAI GPT-4 as the judge.
+# Use these to evaluate with a different provider or local model.
+
+# --- Anthropic Claude as judge ---
+# anthropic>=0.25.0          # Anthropic API client
+                             # Usage in DeepEval:
+                             #   from deepeval.models import DeepEvalBaseLLM
+                             #   class ClaudeJudge(DeepEvalBaseLLM): ...
+                             # Claude-3-Haiku is cheaper than GPT-4o-mini
+
+# --- Azure OpenAI as judge ---
+# openai>=1.30.0             # Already a deepeval dependency
+                             # Configure via environment variables:
+                             #   AZURE_OPENAI_API_KEY
+                             #   AZURE_OPENAI_ENDPOINT
+                             #   AZURE_OPENAI_API_VERSION
+
+# --- Local Ollama as judge (completely free, no API key) ---
+# Install Ollama separately: https://ollama.ai/
+# Pull a model: ollama pull llama3
+# Then implement DeepEvalBaseLLM wrapper pointing to localhost:11434
+# No additional pip package required — uses requests
+
+# ============================================================
+# Optional: pytest Integration for CI/CD
+# ============================================================
+# Use these to run DeepEval evaluations as automated test suites.
+
+# pytest>=8.0.0              # Required for deepeval test run
+                             # Usage: deepeval test run test_llm.py
+                             # DeepEval already installs pytest as a dependency,
+                             # but listed here explicitly for CI/CD clarity
+
+# pytest-asyncio>=0.23.0    # Async test support (if using async LLM clients)
+
+# pytest-xdist>=3.5.0       # Parallel test execution
+                             # Speeds up large evaluation datasets significantly:
+                             # deepeval test run test_llm.py -n 4  (4 parallel workers)
+
+# ============================================================
+# Optional: Result Storage & Reporting
+# ============================================================
+# Save evaluation results to files or databases for tracking.
+
+# pandas>=2.0.0              # Convert evaluation results to DataFrame
+                             # Save as CSV: df.to_csv("eval_results.csv")
+
+# openpyxl>=3.1.0            # Save to Excel: df.to_excel("eval_results.xlsx")
+
+# sqlalchemy>=2.0.0          # Save to any SQL database for trend analysis
+
+# matplotlib>=3.8.0          # Plot score distributions, trends over time
+# seaborn>=0.13.0            # Statistical visualizations for eval results
+
+# ============================================================
+# Optional: Dashboard & Monitoring
+# ============================================================
+
+# streamlit>=1.30.0          # Build a custom evaluation dashboard
+                             # Display scores, reasons, trends in a web app
+
+# gradio>=4.0.0              # Interactive evaluation interface
+                             # Allow users to input LLM outputs and see scores live
+
+# ============================================================
+# Optional: LLM Application Frameworks
+# ============================================================
+# If you want to evaluate outputs from these frameworks:
+
+# llama-index>=0.11.0        # Evaluate LlamaIndex RAG pipeline outputs
+                             # Use retrieval_context from LlamaIndex query responses
+
+# langchain>=0.2.0           # Evaluate LangChain chain/agent outputs
+# langgraph>=0.2.0           # Evaluate LangGraph agent outputs
+
+# crewai>=0.80.0             # Evaluate CrewAI multi-agent outputs
+# phidata>=2.7.0             # Evaluate Phidata agent outputs
+
+# ============================================================
+# Optional: Data & Testing Utilities
+# ============================================================
+
+# faker>=24.0.0              # Generate synthetic test data for evaluation datasets
+
+# datasets>=2.18.0           # Load standard NLP datasets (HuggingFace)
+                             # Use benchmark datasets to build test suites
+
+# scikit-learn>=1.4.0        # Statistical analysis of evaluation results
+                             # Compute inter-rater agreement, correlation
+
+# ============================================================
+# NOTES FOR DEVELOPERS
+# ============================================================
+#
+# 1. DEEPEVAL IS A COMPLETE PACKAGE
+#    Just `pip install deepeval` installs everything you need for
+#    this project. OpenAI is a dependency of deepeval itself.
+#    You do NOT need to separately install openai for basic usage.
+#
+# 2. COST PER EVALUATION
+#    Each metric.measure(test_case) call makes 1-2 LLM API calls.
+#    Approximate costs with GPT-4o-mini as judge:
+#      GEval:              ~$0.0001 per evaluation
+#      FaithfulnessMetric: ~$0.0003 per evaluation (2 steps)
+#    With 100 test cases and 3 metrics: ~$0.06 total (very cheap)
+#    With 10,000 test cases:            ~$6.00 total
+#    Use GPT-4o-mini as judge to minimize costs.
+#
+# 3. SETTING THE JUDGE MODEL
+#    GEval:
+#      metric = GEval(..., model="gpt-4o-mini")
+#    FaithfulnessMetric:
+#      metric = FaithfulnessMetric(threshold=0.7, model="gpt-4o-mini")
+#    Set model explicitly to control costs and reproducibility.
+#
+# 4. GEVAL CRITERIA QUALITY
+#    GEval score quality directly depends on criteria clarity:
+#      BAD:  criteria="Is the output good?"
+#      GOOD: criteria="Coherence - whether all sentences connect
+#                       logically and the response flows naturally
+#                       from introduction to conclusion"
+#    Spend time writing precise, unambiguous criteria.
+#
+# 5. FAITHFULNESSMETRIC requires retrieval_context
+#    If retrieval_context is not provided in LLMTestCase,
+#    FaithfulnessMetric will raise a ValueError.
+#    Always pass retrieval_context when testing RAG outputs.
+#
+# 6. THRESHOLD GUIDELINES BY APPLICATION TYPE
+#    Creative/casual:    threshold=0.5  (lenient)
+#    General chatbot:    threshold=0.7  (standard)
+#    Enterprise/business: threshold=0.8  (strict)
+#    Medical/legal/finance: threshold=0.9  (very strict)
+#    Adjust per metric and per risk level of your application.
+#
+# 7. RUNNING WITH PYTEST
+#    Create test_llm.py and run:
+#      deepeval test run test_llm.py
+#    NOT: pytest test_llm.py
+#    The deepeval CLI applies additional setup for async metrics.
+#
+# 8. CONFIDENT AI DASHBOARD (Optional but Recommended)
+#    Free tier available at: https://app.confident-ai.com
+#    Login with: deepeval.login_with_confident_api_key("your-key")
+#    Provides: visual charts, score history, regression alerts,
+#              test case management, team collaboration.
+# ============================================================
